@@ -2,6 +2,8 @@
 #define helpers_hpp
 
 #include <chrono>
+#include <fstream>
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -130,4 +132,52 @@ std::vector<float> partialSum(std::vector<float> cube,
     result.push_back(sum);
   }
   return result;
+}
+
+static void readDataBinary(std::string filename) {
+  std::ifstream dataFile;
+  dataFile.open(filename);
+
+  std::cout << "readDataBinary()" << std::endl << std::endl;
+
+  size_t naxes;
+  dataFile.read((char *)&naxes, sizeof(size_t));
+
+  // reading naxis one by one
+  std::vector<size_t> naxis(naxes);
+  size_t arrSize = 1;
+  for (size_t i = 0; i < naxes; i++) {
+    dataFile.read((char *)&naxis[i], sizeof(size_t));
+    arrSize *= naxis[i];
+  }
+
+  // reading whole data
+  float arr[arrSize];
+  float value;
+  for (size_t i = 0; i < arrSize; i++) {
+    dataFile.read((char *)&value, sizeof(float));
+    arr[i] = value;
+  }
+
+  dataFile.close();
+}
+
+static void writeDataBinary(const std::vector<size_t> &naxis,
+                            const std::vector<float> &arr,
+                            std::string filename) {
+  std::ofstream writer;
+  writer.open(filename);
+
+  size_t naxes = naxis.size();
+  writer.write((char *)&naxes, sizeof(size_t));
+
+  for (size_t i = 0; i < naxes; i++) {
+    writer.write((char *)&naxis[i], sizeof(size_t));
+  }
+
+  for (size_t i = 0; i < arr.size(); i++) {
+    writer.write((char *)&arr[i], sizeof(float));
+  }
+
+  writer.close();
 }
