@@ -1,0 +1,5 @@
+-x
+c++
+-std=c++14
+-I
+include
