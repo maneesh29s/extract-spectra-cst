@@ -5,14 +5,6 @@
 #include <string>
 #include <vector>
 
-#include <adios2.h>
-#include <casacore/casa/Arrays.h>
-#include <casacore/coordinates/Coordinates/CoordinateSystem.h>
-#include <casacore/coordinates/Coordinates/CoordinateUtil.h>
-
-#include "CasaImageAccess.h"
-#include "FitsImageAccess.h"
-
 namespace chrono = std::chrono;
 
 class Timer {
@@ -120,3 +112,22 @@ std::vector<float> generateRandomData(const std::vector<size_t> &naxis,
 }
 
 #endif
+
+std::vector<float> partialSum(std::vector<float> cube,
+                              std::vector<size_t> dimensions) {
+  std::vector<float> result{};
+
+  size_t z_stride = dimensions[1] * dimensions[0];
+  size_t y_stride = dimensions[0];
+  for (size_t i = 0; i < dimensions[2]; i++) {
+    float sum = 0;
+    for (size_t j = 0; j < dimensions[1]; j++) {
+      for (size_t k = 0; k < dimensions[0]; k++) {
+        size_t elementIndex = (i * z_stride) + (j * y_stride) + k;
+        sum += cube[elementIndex];
+      }
+    }
+    result.push_back(sum);
+  }
+  return result;
+}
