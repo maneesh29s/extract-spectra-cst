@@ -4,6 +4,7 @@
 #include <chrono>
 #include <fstream>
 #include <iostream>
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -29,24 +30,16 @@ public:
 
 class Parameters {
 public:
-  std::string inputImageType;
   std::string imageFilePath;
   std::string jsonFilePath;
-  std::string outputImageType;
   std::string outputDirPath;
 
   Parameters() {}
 
-  Parameters(std::string inputImageType, std::string &imageFilePath,
-             std::string &jsonFilePath, std::string outputImageType,
-             std::string &odp)
-      : inputImageType(inputImageType), imageFilePath(imageFilePath),
-        jsonFilePath(jsonFilePath), outputImageType(outputImageType),
-        outputDirPath(odp) {
-    if (outputDirPath.back() != '/') {
-      outputDirPath.append("/");
-    }
-  }
+  Parameters(std::string &imageFilePath, std::string &jsonFilePath,
+             std::string &outputDirPath)
+      : imageFilePath(imageFilePath), jsonFilePath(jsonFilePath),
+        outputDirPath(outputDirPath) {}
 };
 
 class SpectralImageSource {
@@ -113,8 +106,6 @@ std::vector<float> generateRandomData(const std::vector<size_t> &naxis,
   return arr;
 }
 
-#endif
-
 std::vector<float> partialSum(std::vector<float> cube,
                               std::vector<size_t> dimensions) {
   std::vector<float> result{};
@@ -134,17 +125,18 @@ std::vector<float> partialSum(std::vector<float> cube,
   return result;
 }
 
-static void readDataBinary(std::string filename) {
+static void readDataBinary(std::string filename, size_t &naxes,
+                           std::vector<size_t> &naxis,
+                           std::vector<float> &data) {
   std::ifstream dataFile;
   dataFile.open(filename);
 
   std::cout << "readDataBinary()" << std::endl << std::endl;
 
-  size_t naxes;
   dataFile.read((char *)&naxes, sizeof(size_t));
 
   // reading naxis one by one
-  std::vector<size_t> naxis(naxes);
+  naxis.resize(naxes);
   size_t arrSize = 1;
   for (size_t i = 0; i < naxes; i++) {
     dataFile.read((char *)&naxis[i], sizeof(size_t));
@@ -152,11 +144,11 @@ static void readDataBinary(std::string filename) {
   }
 
   // reading whole data
-  float arr[arrSize];
+  data.resize(arrSize);
   float value;
   for (size_t i = 0; i < arrSize; i++) {
     dataFile.read((char *)&value, sizeof(float));
-    arr[i] = value;
+    data[i] = value;
   }
 
   dataFile.close();
@@ -181,3 +173,5 @@ static void writeDataBinary(const std::vector<size_t> &naxis,
 
   writer.close();
 }
+
+#endif

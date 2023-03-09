@@ -1,24 +1,28 @@
 CXXFLAGS=-std=c++14 -Iinclude/
 
-# OPTIMISATION=-O3
-OPTIMISATION=-fsanitize=address -g
+OPTIMISATION=-O3
+# OPTIMISATION=-fsanitize=address -g
 
-# LIB=-ljsoncpp
+LIB=-ljsoncpp
 CXX=g++
 
-# SRC = src/
+main: src/main
 
 test: test/test_spectralExtractor
 
-all: $(SRC) $(TEST)
+all: main test
+
+# src
+src/%: src/%.cc dir
+	$(CXX) $(CXXFLAGS) $(OPTIMISATION) $(LIB) -o build/$@ $< $(OPT)
 
 # test
 test/%: test/%.cc dir
-	$(CXX) $(CXXFLAGS) $(OPTIMISATION) $(LIB) -o build/$@ $<
+	$(CXX) $(CXXFLAGS) $(OPTIMISATION) $(LIB) -o build/$@ $< $(OPT)
 
 
 dir:
-	mkdir -p build/test
+	mkdir -p build/test build/src
 
 .PHONY: dir
 
