@@ -61,9 +61,7 @@ void spectrumExtractionWithSingleRead(Parameters &parameters) {
       result[i - slicerBegin[2]] = sum;
     }
 
-    std::string filename =
-        parameters.outputDirPath + "-" + std::to_string(i) + ".dat";
-    writeDataBinary(std::vector<size_t>{result.size()}, result, filename);
+    writeDataBinary(std::vector<size_t>{result.size()}, result, parameters.outputDirPath);
   }
 
   jsonFile.close();

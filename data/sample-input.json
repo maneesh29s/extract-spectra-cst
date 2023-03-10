@@ -1,3 +1,4 @@
 [
-    { "sourceID": "SB40905_component_24a", "slicerBegin": [0, 1, 0], "slicerEnd": [2, 2, 0], "stride": [1,1,1], "length": [3, 2, 1], "stokes": "I" }
+    { "sourceID": "SB40905_component_24a", "slicerBegin": [0, 1, 0], "slicerEnd": [2, 2, 0], "stride": [1,1,1], "length": [3, 2, 1], "stokes": "I" },
+    { "sourceID": "SB40905_component_24b", "slicerBegin": [0, 0, 0], "slicerEnd": [2, 2, 0], "stride": [1,1,1], "length": [3, 3, 1], "stokes": "I" }
 ]

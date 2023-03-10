@@ -3,6 +3,7 @@
 
 #include <chrono>
 #include <fstream>
+#include <ios>
 #include <iostream>
 #include <ostream>
 #include <string>
@@ -158,7 +159,7 @@ static void writeDataBinary(const std::vector<size_t> &naxis,
                             const std::vector<float> &arr,
                             std::string filename) {
   std::ofstream writer;
-  writer.open(filename);
+  writer.open(filename, std::ios_base::app);
 
   size_t naxes = naxis.size();
   writer.write((char *)&naxes, sizeof(size_t));
