@@ -2,6 +2,7 @@
 #define helpers_hpp
 
 #include <chrono>
+#include <cstddef>
 #include <fstream>
 #include <ios>
 #include <iostream>
@@ -74,25 +75,25 @@ public:
   }
 };
 
-std::vector<float> generateSequentialData(const std::vector<size_t> &naxis,
+std::vector<float> generateSequentialData(const std::vector<int64_t> &naxis,
                                           float start) {
-  size_t totpix = 1;
-  for (size_t i = 0; i < naxis.size(); i++)
+  int64_t totpix = 1;
+  for (int64_t i = 0; i < naxis.size(); i++)
     totpix *= naxis[i];
 
   std::vector<float> arr(totpix);
 
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (int64_t i = 0; i < arr.size(); i++) {
     // logic
     arr[i] = start + (float)i;
   }
   return arr;
 }
 
-std::vector<float> generateRandomData(const std::vector<size_t> &naxis,
+std::vector<float> generateRandomData(const std::vector<int64_t> &naxis,
                                       float range, float offset) {
-  size_t totpix = 1;
-  for (size_t i = 0; i < naxis.size(); i++)
+  int64_t totpix = 1;
+  for (int64_t i = 0; i < naxis.size(); i++)
     totpix *= naxis[i];
 
   std::vector<float> arr(totpix);
@@ -100,7 +101,7 @@ std::vector<float> generateRandomData(const std::vector<size_t> &naxis,
   time_t seed = time(0);
   srand(seed);
 
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (int64_t i = 0; i < arr.size(); i++) {
     arr[i] = offset + range * (rand() / (float)RAND_MAX);
   }
 
@@ -108,16 +109,16 @@ std::vector<float> generateRandomData(const std::vector<size_t> &naxis,
 }
 
 std::vector<float> partialSum(std::vector<float> cube,
-                              std::vector<size_t> dimensions) {
+                              std::vector<int64_t> dimensions) {
   std::vector<float> result{};
 
-  size_t z_stride = dimensions[1] * dimensions[0];
-  size_t y_stride = dimensions[0];
-  for (size_t i = 0; i < dimensions[2]; i++) {
+  int64_t z_stride = dimensions[1] * dimensions[0];
+  int64_t y_stride = dimensions[0];
+  for (int64_t i = 0; i < dimensions[2]; i++) {
     float sum = 0;
-    for (size_t j = 0; j < dimensions[1]; j++) {
-      for (size_t k = 0; k < dimensions[0]; k++) {
-        size_t elementIndex = (i * z_stride) + (j * y_stride) + k;
+    for (int64_t j = 0; j < dimensions[1]; j++) {
+      for (int64_t k = 0; k < dimensions[0]; k++) {
+        int64_t elementIndex = (i * z_stride) + (j * y_stride) + k;
         sum += cube[elementIndex];
       }
     }
@@ -126,49 +127,42 @@ std::vector<float> partialSum(std::vector<float> cube,
   return result;
 }
 
-static void readDataBinary(std::string filename, size_t &naxes,
-                           std::vector<size_t> &naxis,
-                           std::vector<float> &data) {
-  std::ifstream dataFile;
-  dataFile.open(filename);
-
-  std::cout << "readDataBinary()" << std::endl << std::endl;
-
-  dataFile.read((char *)&naxes, sizeof(size_t));
+static void readDataSize(std::ifstream &dataFile, int64_t &naxes,
+                         std::vector<int64_t> &naxis, int64_t &size) {
+  dataFile.read((char *)&naxes, sizeof(int64_t));
 
   // reading naxis one by one
   naxis.resize(naxes);
-  size_t arrSize = 1;
-  for (size_t i = 0; i < naxes; i++) {
-    dataFile.read((char *)&naxis[i], sizeof(size_t));
+  int64_t arrSize = 1;
+  for (int64_t i = 0; i < naxes; i++) {
+    dataFile.read((char *)&naxis[i], sizeof(int64_t));
     arrSize *= naxis[i];
   }
+  size = arrSize;
+}
 
-  // reading whole data
-  data.resize(arrSize);
+static void readData(std::ifstream &dataFile, std::vector<float> &data) {
   float value;
-  for (size_t i = 0; i < arrSize; i++) {
+  for (int64_t i = 0; i < data.size(); i++) {
     dataFile.read((char *)&value, sizeof(float));
     data[i] = value;
   }
-
-  dataFile.close();
 }
 
-static void writeDataBinary(const std::vector<size_t> &naxis,
+static void writeDataBinary(const std::vector<int64_t> &naxis,
                             const std::vector<float> &arr,
                             std::string filename) {
   std::ofstream writer;
   writer.open(filename, std::ios_base::app);
 
-  size_t naxes = naxis.size();
-  writer.write((char *)&naxes, sizeof(size_t));
+  int64_t naxes = naxis.size();
+  writer.write((char *)&naxes, sizeof(int64_t));
 
-  for (size_t i = 0; i < naxes; i++) {
-    writer.write((char *)&naxis[i], sizeof(size_t));
+  for (int64_t i = 0; i < naxes; i++) {
+    writer.write((char *)&naxis[i], sizeof(int64_t));
   }
 
-  for (size_t i = 0; i < arr.size(); i++) {
+  for (int64_t i = 0; i < arr.size(); i++) {
     writer.write((char *)&arr[i], sizeof(float));
   }
 

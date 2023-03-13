@@ -4,9 +4,9 @@
 #include <vector>
 
 int main() {
-  std::string inputDataFile = "data/test_array_data.dat";
+  std::string inputDataFile = "data/test_3d_data.dat";
 
-  std::vector<size_t> naxis = std::vector<size_t>{3, 3, 3};
+  std::vector<int64_t> naxis = std::vector<int64_t>{20, 20, 20};
   std::vector<float> data = generateSequentialData(naxis, 1);
   writeDataBinary(naxis, data, inputDataFile);
 
@@ -14,5 +14,5 @@ int main() {
   std::string outputFile = "out/partial-sum.dat";
 
   Parameters parameters = Parameters(inputDataFile, inputJsonFile, outputFile);
-  spectrumExtractionWithSingleRead(parameters);
+  spectrumExtractionWithReadInChunks(parameters);
 }
