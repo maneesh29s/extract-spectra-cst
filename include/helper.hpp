@@ -34,14 +34,14 @@ class Parameters {
 public:
   std::string imageFilePath;
   std::string jsonFilePath;
-  std::string outputDirPath;
+  std::string outputFilePath;
 
   Parameters() {}
 
   Parameters(std::string &imageFilePath, std::string &jsonFilePath,
              std::string &outputDirPath)
       : imageFilePath(imageFilePath), jsonFilePath(jsonFilePath),
-        outputDirPath(outputDirPath) {}
+        outputFilePath(outputDirPath) {}
 };
 
 class SpectralImageSource {
@@ -151,10 +151,7 @@ static void readData(std::ifstream &dataFile, std::vector<float> &data) {
 
 static void writeDataBinary(const std::vector<int64_t> &naxis,
                             const std::vector<float> &arr,
-                            std::string filename) {
-  std::ofstream writer;
-  writer.open(filename, std::ios_base::app);
-
+                            std::ofstream &writer) {
   int64_t naxes = naxis.size();
   writer.write((char *)&naxes, sizeof(int64_t));
 
@@ -165,8 +162,6 @@ static void writeDataBinary(const std::vector<int64_t> &naxis,
   for (int64_t i = 0; i < arr.size(); i++) {
     writer.write((char *)&arr[i], sizeof(float));
   }
-
-  writer.close();
 }
 
 #endif

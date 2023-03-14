@@ -21,25 +21,35 @@ std::vector<float> processSource(int64_t slicerBegin[], int64_t slicerEnd[],
 
   int64_t z_stride = naxis[1] * naxis[0];
   int64_t y_stride = naxis[0];
+
+  // DEBUG
   std::cout << "stride: " << z_stride << " ystride: " << y_stride << "\n";
+  //////////
+
   for (int64_t i = slicerBegin[2]; i <= slicerEnd[2]; i++) {
     float sum = 0;
     for (int64_t j = slicerBegin[1]; j <= slicerEnd[1]; j++) {
       for (int64_t k = slicerBegin[0]; k <= slicerEnd[0]; k++) {
         int64_t elementIndex = (i * z_stride) + (j * y_stride) + k;
-        std::cout << elementIndex << " i:" << i << " j:" << j << " k:" << k;
         sum += data[elementIndex];
+
+        // DEBUG
+        std::cout << elementIndex << " i:" << i << " j:" << j << " k:" << k;
         std::cout << "    DATA:       " << data[elementIndex] << "\n";
+        /////////
       }
       std::cout << std::endl;
     }
     result[i - slicerBegin[2]] = sum;
   }
-  std::cout << "partial sum" << "\n";
+  // DEBUG
+  std::cout << "partial sum" << std::endl;
   for (int i = 0; i < result.size(); i++) {
     std::cout << result[i] << ",";
   }
   std::cout << std::endl;
+  ////// 
+
   return result;
 }
 
@@ -49,6 +59,7 @@ void spectrumExtractionWithReadInChunks(Parameters &parameters) {
 
   std::string imageFilePath = parameters.imageFilePath;
   std::string jsonFilePath = parameters.jsonFilePath;
+  std::string outputFilePath = parameters.outputFilePath;
 
   std::ifstream jsonFile;
   jsonFile.open(jsonFilePath);
@@ -65,6 +76,9 @@ void spectrumExtractionWithReadInChunks(Parameters &parameters) {
   dataFile.open(imageFilePath);
   readDataSize(dataFile, NAXES, naxis, dataSize);
 
+  std::ofstream writer;
+  writer.open(outputFilePath, std::ios_base::app);
+
   // int64_t chunkSize = 536870912; // 2 GiB of numbers
   //  yLimit should be greater than the max y-size of the source cube
   // number of y layers to make 2 GiB, currently 5 for testing
@@ -79,8 +93,10 @@ void spectrumExtractionWithReadInChunks(Parameters &parameters) {
     readData(dataFile, data);
     yLayersProcessed += ySize;
 
+    // DEBUG
     std::cout << "yLayersProcessed: " << yLayersProcessed << "\n";
     std::cout << "ySize: " << ySize << "\n";
+    ///////
 
     while (sourcesProcessed < root.size() &&
            root[sourcesProcessed]["slicerEnd"][1].asInt64() <
@@ -93,16 +109,28 @@ void spectrumExtractionWithReadInChunks(Parameters &parameters) {
         slicerEnd[j] = root[sourcesProcessed]["slicerEnd"][j].asInt64();
         length[j] = root[sourcesProcessed]["length"][j].asInt64();
       }
+
+      // changing Y dimension value to relative
       slicerBegin[1] -= (yLayersProcessed - ySize);
       slicerEnd[1] -= (yLayersProcessed - ySize);
+
+      // logic to process data
       std::vector<float> result =
           processSource(slicerBegin, slicerEnd, stride, length, naxis, data);
+
+      // DEBUG
       sourcesProcessed++;
       std::cout << "sourcesProcessed: " << sourcesProcessed << "\n";
+      /////
+
+      std::vector<int64_t> resultShape{1, 1, static_cast<int64_t>(result.size())};
+
+      writeDataBinary(resultShape, result, writer);
     }
   }
   jsonFile.close();
   dataFile.close();
+  writer.close();
 }
 
 #endif

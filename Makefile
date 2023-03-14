@@ -22,7 +22,7 @@ test/%: test/%.cc dir
 
 
 dir:
-	mkdir -p build/test build/src
+	mkdir -p build/test build/src out/
 
 .PHONY: dir
 
